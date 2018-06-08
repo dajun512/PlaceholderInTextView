@@ -14,21 +14,11 @@
 
 +(void)load
 {
-    Method textM = class_getInstanceMethod(self, @selector(setText:));
-    Method cxjTextM = class_getInstanceMethod(self, @selector(setCxj_Text:));
-    method_exchangeImplementations(textM, cxjTextM);
+
+    
+    method_exchangeImplementations(class_getInstanceMethod(self, @selector(setText:)), class_getInstanceMethod(self, @selector(setCxj_Text:)));
 }
 
-
-
-//用xib创建时判断
--(void)awakeFromNib
-{
-    [super awakeFromNib];
-
-    [self setInitPlaceholder];
-
-}
 
 //用代码创建时判断
 -(void)setCxj_Text:(NSString *)text
@@ -41,17 +31,45 @@
 //设置隐藏或显示
 -(void)setInitPlaceholder
 {
-    self.placeholderLabel.hidden = (self.text.length > 0);
+    if (self.placeholder) {
+        self.placeholderLabel.hidden = (self.text.length > 0);
+    }
 }
 
 
 
-//设置placeholderLabel
+#pragma mark - 设置保存代理对象
+-(void)setCxj_delegate:(id<UITextViewDelegate>)cxj_delegate
+{
+    self.delegate = (id<UITextViewDelegate>)self;
+    objc_setAssociatedObject(self, @selector(cxj_delegate), cxj_delegate, OBJC_ASSOCIATION_ASSIGN);
+}
+
+-(id<UITextViewDelegate>)cxj_delegate
+{
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+
+-(void)setPlaceholder:(NSAttributedString *)placeholder
+{
+    objc_setAssociatedObject(self, @selector(placeholder), placeholder, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (self.delegate == nil) self.delegate = (id<UITextViewDelegate>)self;
+    [self setInitPlaceholder];
+}
+-(NSAttributedString *)placeholder
+{
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+
+//设置placeholder
 -(void)setPlaceholderLabel:(UILabel *)placeholderLabel
 {
     objc_setAssociatedObject(self, @selector(placeholderLabel), placeholderLabel, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
+//懒加载placeholder
 -(UILabel *)placeholderLabel
 {
     UILabel *label = objc_getAssociatedObject(self, _cmd);
@@ -64,22 +82,30 @@
         label.textColor = [UIColor colorWithWhite:190/256.0 alpha:1.0];
         label.hidden = YES;
         label.userInteractionEnabled = NO;
+        [self addSubview:label];
         [self setPlaceholderLabel:label];
     }
-    if (label.superview == nil) {
-        [self addSubview:label];
-    }
-    
+    label.attributedText = self.placeholder;
     return label;
 }
 
 
-//当内容改变时
--(void)textViewDidChange
+
+
+
+
+
+#pragma mark - delegate
+- (void)textViewDidChange:(UITextView *)textView
 {
+    if (self.cxj_delegate == nil) return;
+    if (![self.cxj_delegate conformsToProtocol:@protocol(UITextViewDelegate)]) return;
+    
+    if ([self.cxj_delegate respondsToSelector:@selector(textViewDidChange:)]) {
+        [self.cxj_delegate textViewDidChange:self];
+    }
+    
     [self setInitPlaceholder];
 }
-
-
 
 @end
