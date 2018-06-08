@@ -17,18 +17,22 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    //1.设置占位符
-    self.textView.placeholderLabel.attributedText = [self attributePlaceholder:@"这是占位符"];
-    //2.设置代理
-    self.textView.delegate = self;
+    //设置占位符(一行代码即可完成设置)
+    self.textView.placeholder = [self attributePlaceholder:@"这是占位符"];
+    
+    
+    
+    
+    
+    //设置代理,如果需要保留占位符请不要直接设置delegate(可选)
+    self.textView.cxj_delegate = self;
 
 }
 
 #pragma mark - UITextViewDelegate重要
 -(void)textViewDidChange:(UITextView *)textView
 {
-    //3.一定记得在这里调用分类的textViewDidChange
-    [self.textView textViewDidChange];
+    NSLog(@"内容改变了");
 }
 
 

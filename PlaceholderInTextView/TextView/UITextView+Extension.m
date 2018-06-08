@@ -14,8 +14,6 @@
 
 +(void)load
 {
-
-    
     method_exchangeImplementations(class_getInstanceMethod(self, @selector(setText:)), class_getInstanceMethod(self, @selector(setCxj_Text:)));
 }
 
@@ -24,7 +22,6 @@
 -(void)setCxj_Text:(NSString *)text
 {
     [self setCxj_Text:text];
-    
     [self setInitPlaceholder];
 }
 
@@ -98,14 +95,14 @@
 #pragma mark - delegate
 - (void)textViewDidChange:(UITextView *)textView
 {
-    if (self.cxj_delegate == nil) return;
-    if (![self.cxj_delegate conformsToProtocol:@protocol(UITextViewDelegate)]) return;
-    
-    if ([self.cxj_delegate respondsToSelector:@selector(textViewDidChange:)]) {
-        [self.cxj_delegate textViewDidChange:self];
-    }
-    
     [self setInitPlaceholder];
+    if ([self.cxj_delegate conformsToProtocol:@protocol(UITextViewDelegate)]) {
+        if ([self.cxj_delegate respondsToSelector:@selector(textViewDidChange:)]) {
+            [self.cxj_delegate textViewDidChange:self];
+        }
+    }
+
+    
 }
 
 @end
